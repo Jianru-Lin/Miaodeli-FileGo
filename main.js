@@ -49,7 +49,7 @@ function main() {
 			return;
 		}
 
-		appendInstructions(instructions);
+		appendInstructions(instructions, resCallback);
 	}
 
 	function onStartError() {

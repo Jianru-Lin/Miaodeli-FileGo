@@ -1,6 +1,8 @@
 exports.name = 'print';
 exports.handler = print;
 
-function print(text) {
-	console.log(text);
+function print(args) {
+	var text = args.text;
+	console.log(text)
+	return {success: true};
 }
