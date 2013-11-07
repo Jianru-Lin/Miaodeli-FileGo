@@ -23,8 +23,10 @@ function main() {
 
 	// 创建并启动 JSON 服务器
 	g.jsonServer = new JsonServer();
-	g.jsonServer.host = '127.0.0.1';
-	g.jsonServer.port = '50055';
+	g.jsonServer.options = {
+		host: '127.0.0.1',
+		port: '50055'
+	};
 	g.jsonServer.on('jsonRequest', onJsonRequest);
 	g.jsonServer.on('started', onStarted);
 	g.jsonServer.on('stopped', onStopped);
@@ -32,7 +34,7 @@ function main() {
 	g.jsonServer.start();
 
 	function onStarted() {
-		console.log(format('Json Server started on %s [%s]', g.jsonServer.host, g.jsonServer.port));
+		console.log(format('Json Server started on %s [%s]', g.jsonServer.options.host, g.jsonServer.options.port));
 	}
 
 	function onStopped() {
@@ -42,7 +44,7 @@ function main() {
 	function onJsonRequest(reqObj, resCallback) {
 		var instructions = reqObj.instructions;
 
-		if (!instructions) {
+		if (!Array.isArray(instructions) || instructions.length < 1) {
 			resCallback({error: 'instructions is missing'});
 			return;
 		}
@@ -63,16 +65,14 @@ function reloadModule(modulePath) {
 	return require(modulePath);
 }
 
-function appendInstructions(instructions) {
+function appendInstructions(instructions, resCallback) {
 	// 如果指令列表中有 dump 指令
 	// 则需要补足一下
 	// 这里是实现数据查询的关键
 	for (var i = instructions.length - 1; i >= 0; --i) {
 		var ins = instructions[i];
-		if ('dump' === ins.name) {
-			// 这样做才能够保证查询后能把结果返回给客户端
-			ins.callback = resCallback;
-		}
+		// 这样做才能够保证查询后能把结果返回给客户端
+		ins.callback = resCallback;
 
 		// 加载指令对应的模块
 		var modulePath = path.resolve(__dirname, 'instructions', ins.name + '.js');
